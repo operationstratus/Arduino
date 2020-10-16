@@ -1,0 +1,83 @@
+int sR; // the value of Serial.read(), as long as it is not -1
+int n = 0; // counter for choosing the right sR
+int num11; // the 11th number in the chain of recieved digits
+int num12; // the 12th number in the chain of recieved digits
+int num13; // the 13th number in the chain of recieved digits
+int sentVal; // the value that was sent from android device
+int ledPin = 13;
+boolean ledStatusPrinted = false;
+// var for checking if led status already has been printed
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+}
+
+
+void loop() {
+  /*
+     PROBLEM WITH BLUETOOTH COMUNICATION
+     For some reason the arduino constantly recieves '-1'
+     from my android (even when I am not sending anything!),
+     so I have to start the void loop() by making the program
+     ignore any inputs with the value -1. Apart from this, whenever
+     I send a one-digit number to the arduino, it gets recieved
+     at the end of an chain of 10 constants, and then followed by
+     a 35. So in order to tell the arduino only to registrate the
+     number I sent I have to count up to 11 wenever a new "chain"
+     is recieved and when the counter hits 11 take that current
+     recieved value and set as sentVal. Then when the following
+     "35" is recieved the counter resets.
+  */
+
+  sR = Serial.read();
+  if (sR != -1) {
+    n++;
+    if (n == 11) {
+      num11 = sR - 48;
+    }
+    if (n == 12 && sR != 35) {
+      num12 = sR - 48;
+    } else if (n == 12 && sR == 35) {
+      sentVal = num11;
+      n = 0;
+      ledStatusPrinted = false;
+      Serial.print("sentVal = ");
+      Serial.println(sentVal);
+    }
+    
+    if (n == 13 && sR != 35) {
+      num13 = sR - 48;
+    } else if (n == 13 && sR == 35) {
+      sentVal = num11 * 10 + num12;
+      n = 0;
+      ledStatusPrinted = false;
+      Serial.print("sentVal = ");
+      Serial.println(sentVal);
+    }
+    if (n >= 11 && sR == 35) {
+      sentVal = num11 * 100 + num12 * 10 + num13;
+      n = 0;
+      ledStatusPrinted = false;
+      Serial.print("sentVal = ");
+      Serial.println(sentVal);
+    }
+
+
+  }
+  if (sentVal == 0) {
+    digitalWrite(ledPin, LOW);
+    if (!ledStatusPrinted) {
+      Serial.println("LED off!");
+      ledStatusPrinted = true;
+    }
+  }
+  if (sentVal == 1) {
+    digitalWrite(ledPin, HIGH);
+    if (!ledStatusPrinted) {
+    Serial.println("LED on!");
+    ledStatusPrinted = true;
+    }
+  }
+}
