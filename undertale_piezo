@@ -1,0 +1,54 @@
+/* 
+ *  F3  174.61
+ *  F#3 185.00
+ *  G3  196.00
+ *  A3  220.00
+ *  C4  261.63
+ *  D4  293.66
+ *  D#4/Eb4   311.13
+ *  E4  329.63
+ *  A4  440.00
+ * 
+ */
+// notes value:    F3      F#3     G3      A3      C4      D4      D#4     E4      A4
+// int notes [] = {174.61, 185.00, 196.00, 220.00, 261.63, 293.66, 311.13, 329.63, 440.00};
+
+
+int notes[] = {220.00, 220.00, 440.00, 329.63, 311.13, 293.66, 261.63, 220.00, 261.63, 293.66, 196.00, 196.00, 440.00, 329.63, 311.13, 293.66, 261.63, 220.00, 261.63, 293.66, 185.00, 185.00, 440.00, 329.63, 311.13, 293.66, 261.63, 220.00, 261.63, 293.66, 174.61, 174.61, 440.00, 329.63, 311.13, 293.66, 261.63, 220.00, 261.63, 293.66};
+int duration = 100; // milliseconds
+int spaces [] = {25, 25, 150, 275, 150, 150, 150, 25, 25, 25, 25, 25, 150, 275, 150, 150, 150, 25, 25, 25, 25, 25, 150, 275, 150, 150, 150, 25, 25, 25, 25, 25, 150, 275, 150, 150, 150, 25, 25, 25}; // milliseconds
+
+int piezoOut = 9;
+int button = 0;
+int DEBUG = 0; // Want to debug? 1 = yes, 0 = no
+
+void setup() {
+  pinMode(2, INPUT);
+  pinMode(3, OUTPUT);
+  pinMode(4, OUTPUT);
+  if (DEBUG) {
+    Serial.begin(9600);
+  }
+}
+
+void loop() {
+  button = digitalRead(2);
+  
+
+  if (button) {
+    for (int i = 0; i < sizeof(notes); i++) {
+      tone(piezoOut, notes[i]);
+      digitalWrite(3, HIGH);
+      digitalWrite(4, HIGH);
+      delay(duration);
+      noTone(piezoOut);
+      digitalWrite(3, LOW);
+      digitalWrite(4, LOW);
+      delay(spaces[i]);
+    }
+  } else {
+    noTone(8);
+    digitalWrite(3, LOW);
+    digitalWrite(4, LOW);
+  }
+}
