@@ -1,0 +1,216 @@
+#include <Servo.h>
+Servo myServo;
+
+const int piezo = A0;
+const int switchPin = 2;
+const int yLed = 3;
+const int gLed = 4;
+const int rLed = 5;
+
+int knockVal;
+int switchVal;
+
+const int quietKnock = 100;
+const int loudKnock = 400;
+
+
+boolean locked = false;
+int numberOfKnocks = 0;
+
+unsigned long prevTime = 0;
+int interval[] = {300, 150, 150, 300, 600, 300, 800};
+boolean fail = false;
+
+void setup() {
+  myServo.attach(9);
+  pinMode(yLed, OUTPUT);
+  pinMode(rLed, OUTPUT);
+  pinMode(gLed, OUTPUT);
+  pinMode(switchPin, INPUT);
+  Serial.begin(9600);
+  
+  digitalWrite(gLed, HIGH);
+  myServo.write(0);
+  Serial.println("The box is unlocked!");
+}
+
+void loop() {
+  unsigned long currentTime = millis();
+
+  // LOCKING
+  if (locked == false) {
+    switchVal = digitalRead(switchPin);
+    if (switchVal == HIGH) {
+      locked = true;
+      numberOfKnocks = 0;
+      digitalWrite(gLed, LOW);
+      digitalWrite(rLed, HIGH);
+      myServo.write(90);
+      Serial.println("The box is locked!");
+      delay(1000);
+    }
+  }
+
+  // UNLOCKING
+  if (locked == true) {
+    knockVal = analogRead(piezo);
+
+    //---------- 1 ----------//
+    if (numberOfKnocks == 0 && checkForKnock(knockVal) == true) {
+      prevTime = currentTime;
+      //interval = intervals[0];
+      numberOfKnocks = 1;
+      knockVal = 0;
+      Serial.println("1 success!");
+    }
+
+    //---------- 2 ----------//
+    if (numberOfKnocks == 1 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[0]) {
+      Serial.println("nr 2 too early");
+      fail = true;
+    } else if (numberOfKnocks == 1 && currentTime - prevTime > interval[0] && checkForKnock(knockVal) == true && currentTime - prevTime <= interval[0] + interval[1]) {
+      prevTime = currentTime;
+      //interval = intervals[1];
+      numberOfKnocks = 2;
+      knockVal = 0;
+      Serial.println("2 success!");
+    } else if (numberOfKnocks == 1 && currentTime - prevTime > interval[1] + interval[0]) {
+      
+      Serial.println(">FAILED NR 2<");
+      Serial.println("currentTime = ");
+      Serial.print(currentTime);
+      Serial.print(", prevTime = ");
+      Serial.print(prevTime);
+      Serial.print(", interval[1] = ");
+      Serial.println(interval[1]);
+      fail = true;
+    }
+
+    //---------- 3 ----------//
+    if (numberOfKnocks == 2 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[1]) {
+      Serial.println("nr 3 too early");
+      fail = true;
+    } else if (numberOfKnocks == 2 && checkForKnock(knockVal) == true && currentTime - prevTime > interval[1] && currentTime - prevTime <= interval[2] + interval[1]) {
+      prevTime = currentTime;
+      //interval = intervals[2];
+      numberOfKnocks = 3;
+      knockVal = 0;
+      Serial.println("3 success!");
+    } else if(numberOfKnocks == 2 && currentTime - prevTime > interval[2] + interval[1]) {
+      Serial.println(">FAILED NR 3<");
+      fail = true;
+    }
+
+    //---------- 4 ----------//
+    if (numberOfKnocks == 3 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[2]) {
+      Serial.println("nr 4 too early");
+      fail = true;
+    } else if (numberOfKnocks == 3 && checkForKnock(knockVal) == true && currentTime - prevTime > interval[2] && currentTime - prevTime <= interval[3] + interval[2]) {
+      prevTime = currentTime;
+      //interval = intervals[3];
+      numberOfKnocks = 4;
+      knockVal = 0;
+      Serial.println("4 success!");
+    } else if(numberOfKnocks == 3 && currentTime - prevTime > interval[3] + interval[2]) {
+      Serial.println(">FAILED NR 4<");
+      fail = true;
+    }
+
+    //---------- 5 ----------//
+    if (numberOfKnocks == 4 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[3]) {
+      Serial.println("nr 5 too early");
+      fail = true;
+    } else if (numberOfKnocks == 4 && checkForKnock(knockVal) == true && currentTime - prevTime > interval[3] && currentTime - prevTime <= interval[4] + interval[3]) {
+      prevTime = currentTime;
+      //interval = intervals[3];
+      numberOfKnocks = 5;
+      knockVal = 0;
+      Serial.println("5 success!");
+    } else if(numberOfKnocks == 4 && currentTime - prevTime > interval[4] + interval[3]) {
+      Serial.println(">FAILED NR 5<");
+      fail = true;
+    }
+
+    //---------- 6 ----------//
+    if (numberOfKnocks == 5 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[4]) {
+      Serial.println("nr 6 too early");
+      fail = true;
+    } else if (numberOfKnocks == 5 && checkForKnock(knockVal) == true && currentTime - prevTime > interval[4] && currentTime - prevTime <= interval[5] + interval[4]) {
+      prevTime = currentTime;
+      //interval = intervals[3];
+      numberOfKnocks = 6;
+      knockVal = 0;
+      Serial.println("6 success!");
+    } else if(numberOfKnocks == 5 && currentTime - prevTime > interval[5] + interval[4]) {
+      Serial.println(">FAILED NR 6<");
+      fail = true;
+    }
+
+    //---------- 7 ----------//
+    if (numberOfKnocks == 6 && checkForKnock(knockVal) == true && currentTime - prevTime > 50 && currentTime - prevTime < interval[5]) {
+      Serial.println("nr 7 too early");
+      fail = true;
+    } else if (numberOfKnocks == 6 && checkForKnock(knockVal) == true && currentTime - prevTime > interval[5] && currentTime - prevTime <= interval[6] + interval[5]) {
+      prevTime = currentTime;
+      //interval = intervals[3];
+      numberOfKnocks = 7;
+      knockVal = 0;
+      Serial.println("7 success!");
+    } else if(numberOfKnocks == 6 && currentTime - prevTime > interval[6] + interval[5]) {
+      Serial.println(">FAILED NR 7<");
+      fail = true;
+    }
+
+    //---------- CORRECT ----------//
+    if (numberOfKnocks == 7 && checkForKnock(knockVal) == true && currentTime - prevTime > 50) {
+      Serial.println(">TOO MANY KNOCKS<");
+      fail = true;
+    } else if (numberOfKnocks == 7 && currentTime - prevTime >= interval[5] + interval[6]) {
+      locked = false;
+      myServo.write(0);
+      delay(20);
+      digitalWrite(gLed, HIGH);
+      digitalWrite(rLed, LOW);
+      Serial.println("The box is unlocked!");
+      prevTime = currentTime;
+    }
+    
+
+    if(fail == true) {
+      int blinkTime = 50;
+      digitalWrite(rLed, LOW);
+      delay(blinkTime);
+      digitalWrite(rLed, HIGH);
+      delay(blinkTime);
+      digitalWrite(rLed, LOW);
+      delay(blinkTime);
+      digitalWrite(rLed, HIGH);
+      delay(blinkTime);
+      digitalWrite(rLed, LOW);
+      delay(blinkTime);
+      digitalWrite(rLed, HIGH);
+      delay(blinkTime);
+
+      Serial.println("___________");
+      Serial.println("FAIL! RETRY");
+      Serial.println("___________");
+      
+      fail = false;
+      prevTime = currentTime;
+      numberOfKnocks = 0;
+    }
+  }
+}
+boolean checkForKnock(int value) {
+  if (value > quietKnock && value < loudKnock) {
+    Serial.print("Valid knock of value ");
+    Serial.println(value);
+    return true; // this terminates the funtion, return to the main program
+  } else if(value > loudKnock) {
+    Serial.print("To hard: ");
+    Serial.println(value);
+    return false;
+  } else {
+    return false;
+  }
+}
