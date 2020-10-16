@@ -1,0 +1,101 @@
+#include <Servo.h>
+Servo myServo;
+int angle;
+
+const int controlPin1 = 2;
+const int controlPin2 = 3;
+const int enablePin = 5;
+
+const int ledFront = 13;
+const int ledBack = 12;
+
+int sR; // Serial.read();
+int rVal; //revieved value
+
+int motorSpeed = 10;
+int motorEnabled = 0;
+
+void setup() {
+  Serial.begin(9600);
+
+  
+  
+  pinMode(controlPin1, OUTPUT);
+  pinMode(controlPin2, OUTPUT);
+  pinMode(enablePin, OUTPUT);
+
+  digitalWrite(enablePin, LOW); // motor initially turned off
+
+  pinMode(ledFront, OUTPUT);
+  digitalWrite(ledFront, LOW);
+  pinMode(ledBack, OUTPUT);
+  digitalWrite(ledBack, LOW);
+
+
+  myServo.attach(6); //THIS IS THE PROBLEM!!!
+}
+
+void loop() {
+
+  sR = Serial.read();
+  if (sR != -1) {
+    rVal = sR;
+    if (sR != 83) {
+      Serial.println(rVal);
+    }
+  }
+
+  //----------motorSpeed----------
+  if (rVal - '0' >= 0 && rVal - '0' <= 9) {
+    motorSpeed = map(rVal - '0', 0, 9, 10, 250);
+    Serial.print("motorSpeed = ");
+    Serial.println(motorSpeed);
+  } else if (rVal == 'q') {
+    motorSpeed = 255;
+  }
+  
+  //----------Forward/Backward----------
+  if (rVal == 'F' || rVal == 'G' || rVal == 'I') {
+    digitalWrite(controlPin1, HIGH);
+    digitalWrite(controlPin2, LOW);
+    analogWrite(enablePin, motorSpeed);
+  }
+  if (rVal == 'B' || rVal == 'H' || rVal == 'J') {
+    digitalWrite(controlPin1, LOW);
+    digitalWrite(controlPin2, HIGH);
+    analogWrite(enablePin, motorSpeed);
+  }
+  
+  //----------STOP----------
+  if (rVal == 'S') {
+    analogWrite(enablePin, 0);
+  }
+
+  //----------ledFront----------
+  if (rVal == 'W') {
+    digitalWrite(ledFront, HIGH);
+  } else if (rVal == 'w') {
+    digitalWrite(ledFront, LOW);
+  }
+  
+  //----------ledBack----------
+  if (rVal == 'U') {
+    digitalWrite(ledBack, HIGH);
+  } else if (rVal == 'u') {
+    digitalWrite(ledBack, LOW);
+  }
+
+
+ 
+  //----------L/R----------
+  if (rVal == 'L' || rVal == 'G' || rVal == 'H') {
+    angle = 0;
+  } else if (rVal == 'R' || rVal == 'I' || rVal == 'J') {
+    angle = 180;
+  } else {
+    angle = 90;
+  }
+  myServo.write(angle);
+  delay(20);
+  
+}
